@@ -1,0 +1,38 @@
+(1). verified it's an ext2 file system
+(2). Read group descriptor 0 to get bmap, imap and inodes_start
+GD info: 8 9 10 939 166 5
+bmap = 8  imap = 9  inode_start = 10
+************ get root inode ************
+(3). Show roor DIR contents
+root inode data block = 33
+
+i_number  rec_len  name_len  name
+     2      12        1      .
+     2      12        2      ..
+    11      20       10      lost+found
+    12      12        1      X
+    14      12        1      Y
+    16      12        1      Z
+    18     944        4      tiny
+
+tokenize /Z/hugefile
+    Z
+    hugefile
+found Z: ino = 16
+found hugefile: ino = 17
+size = 442348
+i_block[0] = 65
+i_block[1] = 66
+i_block[2] = 67
+i_block[3] = 68
+i_block[4] = 69
+i_block[5] = 70
+i_block[6] = 71
+i_block[7] = 72
+i_block[8] = 73
+i_block[9] = 74
+i_block[10] = 75
+i_block[11] = 76
+i_block[12] = 77
+i_block[13] = 334
+i_block[14] = 0

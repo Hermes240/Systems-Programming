@@ -1,0 +1,147 @@
+enter main
+&argc=ffc88650 argv=ffc886e4 env=ffc886f8
+&a=ffc88610 &b=ffc88614 &c=ffc88618
+argv[0]=a.out
+argv[1]=a
+argv[2]=b
+argv[3]=c
+enter A
+&d = ffc885d0,	&e = ffc885d4,	&f = ffc885d8
+enter B
+&g = ffc885a0,	&h = ffc885a4,	&i = ffc885a8
+enter C
+&u = ffc88564,	&v = ffc88568,	&w = ffc8856c,	&i = ffc88570,	&*p = 56589aa2
+
+ffc88588--->ffc885b8--->ffc885e8--->ffc88638--->0--->
+
+ffc88574	ffc88574
+ffc88578	1
+ffc8857c	162d4600
+ffc88580	ffc88650  #address of argc
+ffc88584	5658afcc
+ffc88588	ffc885b8   # funtion C definition
+ffc8858c	5658980e
+ffc88590	7
+ffc88594	8
+ffc88598	ffc885a4
+ffc8859c	ffc885a8
+ffc885a0	7           # local variable g
+ffc885a4	8           # local variable h
+ffc885a8	9           # local variable i
+ffc885ac	162d4600
+ffc885b0	ffc88650
+ffc885b4	5658afcc
+ffc885b8	ffc885e8    # function B definition
+ffc885bc	56589773
+ffc885c0	4
+ffc885c4	5
+ffc885c8	ffc885d4
+ffc885cc	ffc885d8
+ffc885d0	4         # local variable d
+ffc885d4	5         # local variable e
+ffc885d8	6         # local variable f
+ffc885dc	162d4600
+ffc885e0	ffc88650
+ffc885e4	5658afcc
+ffc885e8	ffc88638  # function A definition
+ffc885ec	565896ce
+ffc885f0	1
+ffc885f4	2
+ffc885f8	ffc89401
+ffc885fc	ffc88618
+ffc88600	f7f95000
+ffc88604	f7f95000
+ffc88608	ffc886f8 # env value
+ffc8860c	ffc886e4
+ffc88610	1        # local variable a
+ffc88614	2        # local variable b
+ffc88618	3        # local variable c
+ffc8861c	162d4600
+ffc88620	4
+ffc88624	ffc886e4 # argv value
+ffc88628	ffc886f8
+ffc8862c	ffc88650
+ffc88630	0
+ffc88634	f7f95000
+ffc88638	0         # main function
+ffc8863c	f7dd8e81
+ffc88640	f7f95000
+ffc88644	f7f95000
+ffc88648	0
+ffc8864c	f7dd8e81
+ffc88650	4        # argc parameter 
+ffc88654	ffc886e4
+ffc88658	ffc886f8
+ffc8865c	ffc88674
+ffc88660	4
+ffc88664	ffc886e4
+ffc88668	f7f95000
+ffc8866c	f7fc675a
+ffc88670	ffc886e0
+ffc88674	0
+ffc88678	f7f95000
+ffc8867c	0
+ffc88680	0
+ffc88684	f5777011
+ffc88688	df675601
+ffc8868c	0
+ffc88690	0
+ffc88694	0
+ffc88698	40
+ffc8869c	f7fde024
+ffc886a0	0
+ffc886a4	0
+ffc886a8	f7fc6869
+ffc886ac	5658afcc
+ffc886b0	4
+ffc886b4	565894a0
+ffc886b8	0
+ffc886bc	565894d1
+ffc886c0	565895dd
+ffc886c4	4
+ffc886c8	ffc886e4
+ffc886cc	56589980
+ffc886d0	565899e0
+ffc886d4	f7fc69b0
+ffc886d8	ffc886dc
+ffc886dc	f7fde940
+ffc886e0	4
+ffc886e4	ffc893f7
+ffc886e8	ffc893fd
+ffc886ec	ffc893ff
+ffc886f0	ffc89401
+ffc886f4	0
+ffc886f8	ffc89403
+ffc886fc	ffc89419
+ffc88700	ffc89a05
+ffc88704	ffc89a27
+ffc88708	ffc89a3e
+ffc8870c	ffc89a4f
+ffc88710	ffc89a5a
+ffc88714	ffc89a6e
+ffc88718	ffc89a8e
+ffc8871c	ffc89aa2
+ffc88720	ffc89ab2
+ffc88724	ffc89abd
+ffc88728	ffc89ae6
+ffc8872c	ffc89af7
+ffc88730	ffc89b03
+ffc88734	ffc89b1a
+ffc88738	ffc89b2c
+ffc8873c	ffc89b4d
+ffc88740	ffc89ba3
+ffc88744	ffc89bcb
+ffc88748	ffc89bdd
+ffc8874c	ffc89bf2
+ffc88750	ffc89c05
+ffc88754	ffc89c18
+ffc88758	ffc89c2d
+ffc8875c	ffc89c80
+ffc88760	ffc89c9b
+ffc88764	ffc89cb3
+ffc88768	ffc89ccf
+ffc8876c	ffc89cdc
+ffc88770	ffc89cf0
+exit B
+exit A
+exit main

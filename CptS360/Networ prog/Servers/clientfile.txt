@@ -1,0 +1,363 @@
+/*
+*Programmers: Hermes Obiang & Rodney Walton
+* Lab Assignment 5: Network programming
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include <unistd.h>
+#include <netdb.h> 
+#include <netinet/in.h> 
+#include <sys/socket.h> 
+#include <sys/types.h> 
+#include <arpa/inet.h>
+#include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define MAXSIZE 10000
+#define BLKSIZE 4096
+#define MAX   256
+#define PORT 1234
+#define h_addr h_addr_list[0]
+
+char *t1 = "xwrxwrxwr-------"; 
+char *t2 = "----------------";
+struct stat mystat, *sp;
+
+char line[MAXSIZE], ans[MAXSIZE];
+int n;
+
+int ls_file(char *fname){
+
+  struct stat fstat, *sp; 
+  int r, i;
+  char ftime[64]; 
+  char *linkname;
+  sp = &fstat; 
+
+  //printf("\nFNAME: %s\n", fname);
+  r = lstat(fname, &fstat);
+  if(r != 0){
+    printf("Lstat error: %s", strerror(errno));
+  }
+
+  if ((sp->st_mode & 0xF000) == 0x8000) // if (S_ISREG()) 
+    printf("%s","RegFile "); 
+  if ((sp->st_mode & 0xF000) == 0x4000) // if (S_ISDIR()) 
+    printf("%s","Directory ");
+  if ((sp->st_mode & 0xF000) == 0xA000) // if (S_ISLNK()) 
+    printf("%s","Link "); 
+
+
+  for (i=8; i >= 0; i--){
+    if (sp->st_mode & (1 << i)) // print r|w|x 
+    printf("%c", t1[i]); 
+    else
+    printf("%c", t2[i]);
+  }
+
+
+  printf(" Link count:%4d",sp->st_nlink); // link count 
+  printf("GID: %4d ",sp->st_gid); // gid 
+  printf("UID: %4d ",sp->st_uid); // uid 
+  printf("File size: %8d ",sp->st_size); // file size
+
+  // print time
+  strcpy(ftime, ctime(&sp->st_ctime)); // print time in calendar form 
+  ftime[strlen(ftime)-1] = 0; // kill \n at end 
+  printf("%s ",ftime); 
+
+  // print name 
+  printf("%s ", basename(fname)); // print file basename 
+
+  //print -> linkname if symbolic file 
+  if ((sp->st_mode & 0xF000)== 0xA000){ 
+    // use readlink() to read linkname 
+    linkname = malloc(sp->st_size);
+    readlink(fname,linkname,sp->st_size);
+    //printf(" -> %s", linkname); // print linked name 
+    free(linkname);
+    } 
+
+
+}
+
+int ls_dir(char *dname) {
+   // use opendir(), readdir(); then call ls_file(name) 
+  struct dirent *pDirent;
+  DIR *pDir;
+
+  pDir = opendir(dname);
+
+  if(pDir == NULL){
+     printf("Failed to open Directory");
+     return 1;
+   }
+
+
+  while((pDirent = readdir(pDir)) != NULL){
+    if(strcmp(pDirent->d_name,".") != 0 && strcmp(pDirent->d_name,"..") != 0 ){
+        //printf("\n PATH: %s\n", pDirent->d_name);
+      //printf ("<p>[%s]<p>\n", pDirent->d_name);
+      ls_file(pDirent->d_name);
+      printf("\n");
+    }
+  }
+
+  return 0;
+}
+
+int get_file(int cfd, char* filename)
+{
+    int size, count, n, file;
+    count = 0;
+    char buf[MAX] = {0};
+
+    read(cfd, buf, MAX);
+    sscanf(buf, "%d", &size);
+
+    file = open(filename, O_WRONLY | O_CREAT);
+    while(count < size)
+    {
+        n = read(cfd, buf, MAX);
+        write(file, buf, n);
+        count += n;
+    }
+
+    close(file);
+    return 0;
+}
+
+int put_file(int cfd, char* filename)
+{
+    struct stat sb;
+    int size, n, file;
+    char buf[MAX] = {0};
+
+
+    if (stat(filename, &sb) == 0)
+        size = sb.st_size;
+    else
+        size = 0;
+
+    sprintf(buf, "%d", size);
+    write(cfd, buf, MAX);
+
+
+    file = open(filename, O_RDONLY);
+
+    while(n = read(file, buf, MAX)){
+        write(cfd, buf, n);
+    }
+
+    close(file);
+    return 0;
+}
+
+
+int main(int argc, char *argv[ ]) 
+{   
+    int cfd, r, SERVER_IP, SERVER_PORT; 
+    struct sockaddr_in saddr; 
+    printf("arg1: %s    arg2: %s \n", argv[1], argv[2]);
+
+    if(argc < 2){
+        printf("Not enoguh args\n");
+        exit(1);
+    }
+    struct hostent *hp = gethostbyname(argv[1]); 
+    SERVER_IP = *(long *)hp->h_addr; 
+    SERVER_PORT = atoi(argv[2]);
+
+    printf("1. create a TCP socket\n");
+    cfd = socket(AF_INET, SOCK_STREAM, 0); 
+    if (cfd < 0) { 
+        printf("socket creation failed\n"); 
+        exit(1); 
+    }
+
+    printf("2. fill in [localhost IP port=1234] as server address\n");
+    bzero(&saddr, sizeof(saddr)); 
+    saddr.sin_family = AF_INET; 
+    saddr.sin_addr.s_addr = SERVER_IP; 
+    saddr.sin_port = htons(SERVER_PORT); 
+  
+    printf("3. connect client socket to server\n");
+    if (connect(cfd, (struct sockaddr *)&saddr, sizeof(saddr)) != 0) { 
+        printf("connection to server failed\n"); 
+        exit(2); 
+    }
+    
+    printf("********  processing loop  *********\n");
+    while(1){
+       char input[255];
+       char command[255]; 
+
+       printf("input a line : ");
+       bzero(line, MAX);                // zero out line[ ]
+       fgets(line, MAX, stdin);         // get a line (end with \n) from stdin
+
+       line[strlen(line)-1] = 0;        // kill \n at end
+       if (line[0]==0)                  // exit if NULL line
+          exit(0);
+
+       sscanf(line,"%s %s",&command, &input);
+	
+	if(strcmp(command, "quit") == 0){ exit(1);}
+       
+       if(line[0] == 'l' && line[1] != 's' ){
+        if(strcmp(command, "lmkdir") == 0){
+            r = mkdir(input, 0755);
+
+            if(r == 0){
+                printf("Made directory\n");
+            }
+
+            else{
+                printf("Failed to make directory\n");
+            }
+        }   
+
+         if(strcmp(command, "lrmdir") == 0){
+            r = rmdir(input);
+
+            if(r == 0){
+                printf("Deleted directory\n");
+            }
+
+            else{
+                printf("Failed to delete directory\n");
+            }
+        }  
+
+         if(strcmp(command, "lrm") == 0){
+            r = unlink(input);
+
+            if(r == 0){
+                printf("Deleted file\n");
+            }
+
+            else{
+                printf("Failed to delete file\n");
+            }
+        } 
+
+        if(strcmp(command, "lcd") == 0){
+            r = chdir(input);
+            if( r == -1){
+                printf("No such directory\n");
+
+            }
+        } 
+
+        if(strcmp(command, "lpwd") == 0){
+            char cwd [128];
+            getcwd(cwd, 128);
+
+           if(getcwd(cwd, 128) != 0){
+               printf("%s\n", cwd);
+           }
+
+           else{
+               printf("Failed to print pwd\n");
+           }
+        } 
+
+        if(strcmp(command, "lcat") == 0){
+            FILE *fp;
+            int c;
+
+            if(strcmp(input, "") == 0)
+            {
+                printf("<p>No file to read from \n<p>");
+            }
+
+            else{
+            fp = fopen(input, "r");
+            if (fp==0) {exit(2);}
+                while ((c = fgetc(fp))!= EOF){
+                        putchar(c);
+                    }
+            }
+        } 
+
+        if(strcmp(command, "lls") == 0){
+            struct stat mystat, *sp = &mystat;
+            int r; 
+            char *filename, path[1024], cwd[256];
+
+            filename = "./"; // default to CWD
+
+            if (strcmp(input, "") != 0){
+
+                filename = input; // if specified a filename 
+            }
+
+            if (r = lstat(filename, sp) < 0){ 
+                printf("no such file or dir %s\n", filename);
+            }
+            
+            else{
+            strcpy(path, filename); 
+            if (path[0] != '/'){ // filename is relative : get CWD path
+                getcwd(cwd, 256); 
+                strcpy(path, cwd); 
+            
+                strcat(path, "/"); 
+                strcat(path,filename);
+            }
+
+            //Check if file or dir 
+            if (S_ISDIR(sp->st_mode)){
+                char cwd [128];
+                getcwd(cwd, 128);
+
+                chdir(path);
+                ls_dir(path); 
+                chdir(cwd);
+            }
+
+            else{
+                ls_file(path);
+                printf("\n");
+            }
+         }
+            
+        } 
+        //Reset input and command
+        bzero(input, MAX);             
+        bzero(command, MAX);             
+
+    } 
+    
+
+       else{
+       
+       if(strcmp(command, "get") == 0){                  
+            write(cfd, line, MAX);
+            get_file(cfd, input);
+       }
+
+       if(strcmp(command, "put") == 0){
+            write(cfd, line, MAX);
+            put_file(cfd, input);
+       }
+        
+        // Send ENTIRE line to server
+       n = write(cfd, line, MAX);
+       printf("client: wrote n=%d bytes; line=(%s)\n", n, line);
+
+       // Read a line from sock and show it
+       n = read(cfd, ans, MAX);
+       printf("client: read  n=%d bytes; echo=(%s)\n",n, ans);
+	bzero(input, MAX);             
+        bzero(command, MAX);
+       }
+    }
+} 
+
+put clientfile.txt     
